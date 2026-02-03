@@ -23,7 +23,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow-x: hidden;
     position: relative;
   }
 
@@ -48,7 +48,7 @@
     background: white;
     border-radius: 28px;
     padding: 56px 60px 48px;
-    width: 480px;
+    width: 460px;
     max-width: 92vw;
     text-align: center;
     box-shadow: 0 24px 56px var(--shadow);
@@ -103,33 +103,31 @@
     color: #fff;
     box-shadow: 0 6px 20px var(--shadow);
     position: relative;
-    z-index: 1;
+    z-index: 2;
   }
   #yesBtn:hover  { box-shadow: 0 8px 28px var(--shadow); transform: scale(1.06); }
   #yesBtn:active { transform: scale(.94); }
 
-  /* No — starts in flow, JS flips to absolute */
+  /* No — starts in flow, JS switches to absolute */
   #noBtn {
     background: #ececec;
     color: #777;
     position: relative;
     z-index: 1;
-    transition: left .22s cubic-bezier(.34,1.56,.64,1),
-                top  .22s cubic-bezier(.34,1.56,.64,1);
+    transition: left .12s cubic-bezier(.34,1.56,.64,1),
+                top  .12s cubic-bezier(.34,1.56,.64,1);
   }
-  #noBtn.abs { position: absolute; z-index: 100; }
+  #noBtn.abs { position: absolute; }
 
-  /* overlay that sits exactly on top of noBtn only */
+  /* invisible overlay that eats every pointer event aimed at No */
   #noOverlay {
     position: absolute;
     z-index: 10;
     background: transparent;
-    border-radius: 999px;
     cursor: default;
   }
 
   /* ── yes card ── */
-  #yesCard { width: 590px; padding-left: 40px; padding-right: 40px; }
   #yesCard h1 { font-size: 2.4rem; margin-bottom: 4px; }
   .valentine-text {
     font-size: 1rem;
@@ -138,48 +136,40 @@
     margin-top: 12px;
   }
 
-  /* ── no card (fallback) ── */
-  #noCard .nope-emoji { font-size: 3rem; display: block; margin-bottom: 8px; }
-  #noCard .valentine-text { color: var(--rose); font-weight: 600; font-size: 1.15rem; }
-  #noCard .retry-btn {
-    margin-top: 24px;
-    background: var(--rose);
-    color: #fff;
-    border: none;
-    border-radius: 999px;
-    padding: 12px 32px;
-    font-size: 1rem;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer;
-    box-shadow: 0 6px 20px var(--shadow);
-  }
-  #noCard .retry-btn:hover { transform: scale(1.05); }
-
   /* ── confetti ── */
   #confetti { position:fixed; inset:0; pointer-events:none; z-index:0; }
 
   /* ── mobile ── */
   @media (max-width: 480px) {
-    .card      { padding: 40px 24px 36px; }
-    .btn-arena { height: 180px; }
+    body {
+      padding: 20px 0;
+      align-items: flex-start;
+    }
     
-    /* Make yes card more compact on mobile */
+    .card {
+      padding: 40px 24px 36px;
+      margin: auto;
+    }
+    .btn-arena { height: 280px; }
+    
+    /* Make yes card much more compact on mobile */
     #yesCard { 
-      padding: 32px 20px 28px; 
-      width: 95vw;
+      padding: 24px 16px 20px;
+      width: 90vw;
+      margin: 20px auto;
     }
     #yesCard h1 { 
-      font-size: 1.8rem; 
-      margin-bottom: 2px; 
+      font-size: 1.5rem; 
+      margin-bottom: 0px; 
     }
     #yesCard .valentine-text {
-      font-size: 0.9rem;
-      line-height: 1.6;
-      margin-top: 8px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin-top: 6px;
     }
     #yesCard iframe {
-      height: 280px;
-      margin-top: 16px;
+      height: 240px;
+      margin-top: 12px;
     }
   }
 </style>
@@ -188,7 +178,7 @@
 
 <canvas id="confetti"></canvas>
 
-<!-- Screen 1: Question -->
+<!-- Screen 1 -->
 <div class="card" id="questionCard">
   <h1>Will you be my Valentine, Debashmita? <span class="heart">💖</span></h1>
   <div class="btn-arena" id="arena">
@@ -197,7 +187,7 @@
   </div>
 </div>
 
-<!-- Screen 2: Yes -->
+<!-- Screen 2 -->
 <div class="card hidden" id="yesCard">
   <h1>🥹💘</h1>
   <p class="valentine-text">
@@ -207,19 +197,7 @@
     Hi Valentine 💕<br>
     You just made my whole day.
   </p>
-  <iframe src="https://open.spotify.com/embed/album/7ARtQpvnPN2ucbmVHngLOs?utm_source=generator"
-          width="100%" height="352" frameBorder="0"
-          allowfullscreen=""
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-          style="border-radius:12px; margin-top:24px; display:block;"></iframe>
-</div>
-
-<!-- Screen 3: No (fallback) -->
-<div class="card hidden" id="noCard">
-  <span class="nope-emoji">😏</span>
-  <p class="valentine-text">Ladki ke naa pe bhi haan hota hai 😉</p>
-  <button class="retry-btn" id="retryBtn">Try again, Debu 💕</button>
+  <iframe data-testid="embed-iframe" style="border-radius:12px; margin-top:24px;" src="https://open.spotify.com/embed/album/7ARtQpvnPN2ucbmVHngLOs?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
 </div>
 
 <script>
@@ -234,19 +212,19 @@
   }
 })();
 
-/* ━━━ No-button: flee + overlay glued via MutationObserver ━━━ */
+/* ━━━ No-button: flee + unclickable overlay ━━━ */
 (function(){
   const arena   = document.getElementById('arena');
   const yesBtn  = document.getElementById('yesBtn');
   const noBtn   = document.getElementById('noBtn');
   let  pinned   = false;
 
-  /* create overlay — sits only on top of noBtn */
+  /* create overlay */
   const overlay = document.createElement('div');
   overlay.id = 'noOverlay';
   arena.appendChild(overlay);
 
-  /* pin both buttons absolute at current flex positions (once) */
+  /* pin both buttons absolute at current layout position (once) */
   function pinOnce(){
     if(pinned) return;
     const aR = arena.getBoundingClientRect();
@@ -264,22 +242,12 @@
     pinned = true;
   }
 
-  /* snap overlay to noBtn's current rendered position */
-  function syncOverlay(){
-    const aR = arena.getBoundingClientRect();
-    const nR = noBtn.getBoundingClientRect();
-    overlay.style.left   = (nR.left - aR.left) + 'px';
-    overlay.style.top    = (nR.top  - aR.top)  + 'px';
-    overlay.style.width  = nR.width  + 'px';
-    overlay.style.height = nR.height + 'px';
-  }
-
   /* move No to a random spot away from Yes */
   function flee(){
     pinOnce();
-    const aR   = arena.getBoundingClientRect();
-    const nR   = noBtn.getBoundingClientRect();
-    const yR   = yesBtn.getBoundingClientRect();
+    const aR  = arena.getBoundingClientRect();
+    const nR  = noBtn.getBoundingClientRect();
+    const yR  = yesBtn.getBoundingClientRect();
     const maxX = aR.width  - nR.width;
     const maxY = aR.height - nR.height;
     const yCx  = yR.left - aR.left + yR.width/2;
@@ -295,34 +263,30 @@
     noBtn.style.left = x+'px';
     noBtn.style.top  = y+'px';
 
-    // move overlay instantly to the new target (before transition finishes)
-    overlay.style.left = x+'px';
-    overlay.style.top  = y+'px';
+    // move overlay after a short delay so transition has started
+    setTimeout(syncOverlay, 130);
   }
 
-  /* show the No-card fallback screen */
-  function showNoCard(){
-    document.getElementById('questionCard').classList.add('hidden');
-    document.getElementById('noCard').classList.remove('hidden');
+  /* keep overlay glued on top of noBtn */
+  function syncOverlay(){
+    const aR = arena.getBoundingClientRect();
+    const nR = noBtn.getBoundingClientRect();
+    overlay.style.left   = (nR.left - aR.left)+'px';
+    overlay.style.top    = (nR.top  - aR.top) +'px';
+    overlay.style.width  = nR.width +'px';
+    overlay.style.height = nR.height+'px';
   }
 
-  /* ── first paint: just sync overlay position (don't pin yet) ── */
-  requestAnimationFrame(()=>{
-    syncOverlay();
-  });
-
-  /* ── MutationObserver: keeps overlay glued if style ever changes ── */
-  new MutationObserver(syncOverlay).observe(noBtn, { attributes: true, attributeFilter: ['style'] });
-
-  /* ── also sync after every transition frame tick ── */
-  noBtn.addEventListener('transitionend', syncOverlay);
+  // initial overlay position (after first paint)
+  requestAnimationFrame(syncOverlay);
 
   /* ── overlay eats ALL input aimed at No ── */
   overlay.addEventListener('pointerdown',  (e)=>{ e.preventDefault(); e.stopPropagation(); flee(); }, {passive:false});
   overlay.addEventListener('touchstart',   (e)=>{ e.preventDefault(); e.stopPropagation(); flee(); }, {passive:false});
   overlay.addEventListener('click',        (e)=>{ e.preventDefault(); e.stopPropagation(); });
+  overlay.addEventListener('contextmenu',  (e)=>{ e.preventDefault(); });
 
-  /* ── desktop: flee when cursor nears No ── */
+  /* ── desktop: flee when mouse hovers over No ── */
   arena.addEventListener('pointermove', (e)=>{
     const nR = noBtn.getBoundingClientRect();
     if(e.clientX>=nR.left-8 && e.clientX<=nR.right+8 &&
@@ -331,20 +295,7 @@
     }
   });
 
-  /* ── safety net: if noBtn click somehow fires anyway → show No card ── */
-  noBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); e.stopPropagation(); showNoCard(); });
-  noBtn.addEventListener('click',       (e)=>{ e.preventDefault(); e.stopPropagation(); showNoCard(); });
-
   window.addEventListener('resize', syncOverlay);
-})();
-
-/* ━━━ Retry button → back to question ━━━ */
-(function(){
-  document.getElementById('retryBtn').addEventListener('pointerdown', (e)=>{
-    e.preventDefault();
-    document.getElementById('noCard').classList.add('hidden');
-    document.getElementById('questionCard').classList.remove('hidden');
-  });
 })();
 
 /* ━━━ Yes → confetti + screen swap ━━━ */
